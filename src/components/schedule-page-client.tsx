@@ -82,9 +82,7 @@ export function SchedulePageClient({
   }, [initialSchedule]);
 
   useEffect(() => {
-    if(schedule.length > 0 || localStorage.getItem("schedule")) {
-        localStorage.setItem("schedule", JSON.stringify(schedule));
-    }
+    localStorage.setItem("schedule", JSON.stringify(schedule));
   }, [schedule]);
   
 
