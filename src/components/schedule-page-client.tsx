@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ClassItem } from "@/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Share2, Clock, MapPin, BookOpen } from "lucide-react";
+import { PlusCircle, Share2, Clock, MapPin, BookOpen, Trash2 } from "lucide-react";
 
 const daysOfWeek: ClassItem["day"][] = [
   "Lunes",
@@ -52,7 +52,7 @@ const daysOfWeek: ClassItem["day"][] = [
 
 const classSchema = z.object({
   subject: z.string().min(1, "La materia es obligatoria"),
-  day: z.enum(daysOfWeek),
+  day: z.enum(daysOfWeek, { required_error: "El día es obligatorio" }),
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
   location: z.string().optional(),
@@ -63,9 +63,30 @@ export function SchedulePageClient({
 }: {
   initialSchedule: ClassItem[];
 }) {
-  const [schedule, setSchedule] = useState(initialSchedule);
+  const [schedule, setSchedule] = useState<ClassItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      const storedSchedule = localStorage.getItem("schedule");
+      if (storedSchedule) {
+        setSchedule(JSON.parse(storedSchedule));
+      } else {
+        setSchedule(initialSchedule);
+      }
+    } catch (error) {
+      console.error("Failed to parse schedule from localStorage", error);
+      setSchedule(initialSchedule);
+    }
+  }, [initialSchedule]);
+
+  useEffect(() => {
+    if(schedule.length > 0 || localStorage.getItem("schedule")) {
+        localStorage.setItem("schedule", JSON.stringify(schedule));
+    }
+  }, [schedule]);
+  
 
   const form = useForm<z.infer<typeof classSchema>>({
     resolver: zodResolver(classSchema),
@@ -88,6 +109,11 @@ export function SchedulePageClient({
     setIsDialogOpen(false);
     form.reset();
   };
+
+  const handleDelete = (id: string) => {
+    setSchedule(schedule.filter(item => item.id !== id));
+    toast({ title: "Clase eliminada", description: "La clase ha sido eliminada de tu horario." });
+  }
   
   const handleShare = () => {
     let shareText = "Mi Horario Semanal:\n\n";
@@ -229,10 +255,14 @@ export function SchedulePageClient({
                 .filter((c) => c.day === day)
                 .sort((a, b) => a.startTime.localeCompare(b.startTime))
                 .map((item) => (
-                    <div key={item.id} className="flex flex-col gap-2 p-3 rounded-lg border bg-card text-card-foreground shadow-sm">
+                    <div key={item.id} className="relative group flex flex-col gap-2 p-3 rounded-lg border bg-card text-card-foreground shadow-sm">
+                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar clase</span>
+                        </Button>
                         <div className="flex items-center gap-2">
                             <BookOpen className="h-4 w-4 text-primary" />
-                            <span className="font-semibold">{item.subject}</span>
+                            <span className="font-semibold pr-6">{item.subject}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Clock className="h-4 w-4" />
