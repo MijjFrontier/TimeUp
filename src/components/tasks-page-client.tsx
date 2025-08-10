@@ -54,7 +54,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "./ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 const taskSchema = z.object({
   title: z.string().min(1, "El título es obligatorio"),
@@ -151,6 +151,8 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
       default: return "outline";
     }
   };
+
+  const sortedTasks = tasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
   return (
     <div className="space-y-6">
@@ -265,8 +267,39 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
           </DialogContent>
         </Dialog>
       </div>
+      
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {tasks.length > 0 ? (
+          sortedTasks.map((task) => (
+            <Card key={task.id}>
+              <CardHeader>
+                <CardTitle className="flex justify-between items-start">
+                  <span className="text-lg">{task.title}</span>
+                  <Badge variant={getTaskBadgeVariant(task.type)}>{task.type}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{format(new Date(task.dueDate), "PPP", { locale: es })}</p>
+                {task.description && <p className="mt-2">{task.description}</p>}
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Eliminar tarea</span>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No se encontraron tareas. ¡Añade una para empezar!</p>
+          </div>
+        )}
+      </div>
 
-      <Card>
+      {/* Desktop View */}
+      <Card className="hidden md:block">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -280,9 +313,7 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
             </TableHeader>
             <TableBody>
               {tasks.length > 0 ? (
-                tasks
-                  .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-                  .map((task) => (
+                sortedTasks.map((task) => (
                     <TableRow key={task.id}>
                       <TableCell className="font-medium">{task.title}</TableCell>
                       <TableCell>
