@@ -64,26 +64,35 @@ export function SchedulePageClient({
   initialSchedule: ClassItem[];
 }) {
   const [schedule, setSchedule] = useState<ClassItem[]>([]);
+  const [isClient, setIsClient] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    try {
-      const storedSchedule = localStorage.getItem("schedule");
-      if (storedSchedule) {
-        setSchedule(JSON.parse(storedSchedule));
-      } else {
-        setSchedule(initialSchedule);
-      }
-    } catch (error) {
-      console.error("Failed to parse schedule from localStorage", error);
-      setSchedule(initialSchedule);
+    if (isClient) {
+        try {
+            const storedSchedule = localStorage.getItem("schedule");
+            if (storedSchedule) {
+                setSchedule(JSON.parse(storedSchedule));
+            } else {
+                setSchedule(initialSchedule);
+            }
+        } catch (error) {
+            console.error("Failed to parse schedule from localStorage", error);
+            setSchedule(initialSchedule);
+        }
     }
-  }, [initialSchedule]);
+  }, [isClient, initialSchedule]);
 
   useEffect(() => {
-    localStorage.setItem("schedule", JSON.stringify(schedule));
-  }, [schedule]);
+    if (isClient) {
+      localStorage.setItem("schedule", JSON.stringify(schedule));
+    }
+  }, [schedule, isClient]);
   
 
   const form = useForm<z.infer<typeof classSchema>>({
