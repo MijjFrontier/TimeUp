@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, MapPin, AlertTriangle, CheckCircle } from "lucide-react";
 import { tasks, schedule } from "@/lib/data";
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function DashboardPage() {
   const upcomingTasks = tasks
@@ -10,33 +11,36 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 5);
 
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
-  const todaysClasses = schedule.filter(c => c.day === today).sort((a,b) => a.startTime.localeCompare(b.startTime));
+  const today = new Date().toLocaleDateString('es-ES', { weekday: 'long' });
+  const todayEnglish = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  const todaysClasses = schedule.filter(c => c.day === todayEnglish).sort((a,b) => a.startTime.localeCompare(b.startTime));
 
   const getTaskBadgeVariant = (type: string) => {
     switch (type) {
-      case 'Exam': return 'destructive';
-      case 'Task': return 'default';
-      case 'Reminder': return 'secondary';
+      case 'Examen': return 'destructive';
+      case 'Tarea': return 'default';
+      case 'Recordatorio': return 'secondary';
       default: return 'outline';
     }
   };
 
   const getTaskIcon = (type: string) => {
     switch (type) {
-      case 'Exam': return <AlertTriangle className="h-5 w-5 text-destructive" />;
-      case 'Task': return <CheckCircle className="h-5 w-5 text-primary" />;
-      case 'Reminder': return <Clock className="h-5 w-5 text-muted-foreground" />;
+      case 'Examen': return <AlertTriangle className="h-5 w-5 text-destructive" />;
+      case 'Tarea': return <CheckCircle className="h-5 w-5 text-primary" />;
+      case 'Recordatorio': return <Clock className="h-5 w-5 text-muted-foreground" />;
       default: return null;
     }
   };
+
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in-0 zoom-in-95">
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Upcoming Deadlines</CardTitle>
-          <CardDescription>Here are your most pressing tasks and exams.</CardDescription>
+          <CardTitle>Próximas Fechas de Entrega</CardTitle>
+          <CardDescription>Aquí están tus tareas y exámenes más urgentes.</CardDescription>
         </CardHeader>
         <CardContent>
           {upcomingTasks.length > 0 ? (
@@ -51,22 +55,22 @@ export default function DashboardPage() {
                         <p className="font-semibold">{task.title}</p>
                         <Badge variant={getTaskBadgeVariant(task.type)} className="shrink-0">{task.type}</Badge>
                      </div>
-                     <p className="text-sm text-muted-foreground">{format(task.dueDate, "EEEE, MMMM d")}</p>
+                     <p className="text-sm text-muted-foreground">{capitalize(format(task.dueDate, "EEEE, d 'de' MMMM", { locale: es }))}</p>
                    </div>
                 </li>
               ))}
             </ul>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No upcoming deadlines. Great job!</p>
+              <p className="text-muted-foreground">No hay fechas de entrega próximas. ¡Buen trabajo!</p>
             </div>
           )}
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Today's Schedule</CardTitle>
-          <CardDescription>Your classes for {today}.</CardDescription>
+          <CardTitle>Horario de Hoy</CardTitle>
+          <CardDescription>Tus clases para {today}.</CardDescription>
         </CardHeader>
         <CardContent>
           {todaysClasses.length > 0 ? (
@@ -92,7 +96,7 @@ export default function DashboardPage() {
             </ul>
           ) : (
             <div className="text-center py-8">
-                <p className="text-muted-foreground">No classes today. Enjoy your day off!</p>
+                <p className="text-muted-foreground">No hay clases hoy. ¡Disfruta tu día libre!</p>
             </div>
           )}
         </CardContent>

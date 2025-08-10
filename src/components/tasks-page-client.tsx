@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, Share2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -56,11 +57,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "./ui/card";
 
 const taskSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+  title: z.string().min(1, "El título es obligatorio"),
   dueDate: z.date({
-    required_error: "A due date is required.",
+    required_error: "Se requiere una fecha de entrega.",
   }),
-  type: z.enum(["Task", "Exam", "Reminder"]),
+  type: z.enum(["Tarea", "Examen", "Recordatorio"]),
   description: z.string().optional(),
 });
 
@@ -73,7 +74,7 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: "",
-      type: "Task",
+      type: "Tarea",
       description: "",
     },
   });
@@ -85,8 +86,8 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
     };
     setTasks([newTask, ...tasks]);
     toast({
-      title: "Task created!",
-      description: `"${values.title}" has been added to your list.`,
+      title: "¡Tarea creada!",
+      description: `"${values.title}" ha sido añadida a tu lista.`,
     });
     setIsDialogOpen(false);
     form.reset();
@@ -94,22 +95,22 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
   
   const handleShare = () => {
     const sortedTasks = [...tasks].sort((a,b) => a.dueDate.getTime() - b.dueDate.getTime());
-    let shareText = "My Tasks & Deadlines:\n\n";
+    let shareText = "Mis Tareas y Fechas de Entrega:\n\n";
     sortedTasks.forEach(task => {
-        shareText += `- [${task.type}] ${task.title} - Due: ${format(task.dueDate, "PPP")}\n`;
+        shareText += `- [${task.type}] ${task.title} - Fecha de entrega: ${format(task.dueDate, "PPP", { locale: es })}\n`;
     });
     navigator.clipboard.writeText(shareText);
     toast({
-        title: "Tasks Copied!",
-        description: "Your task list has been copied to the clipboard.",
+        title: "¡Tareas Copiadas!",
+        description: "Tu lista de tareas ha sido copiada al portapapeles.",
     });
   }
 
   const getTaskBadgeVariant = (type: string) => {
     switch (type) {
-      case "Exam": return "destructive";
-      case "Task": return "default";
-      case "Reminder": return "secondary";
+      case "Examen": return "destructive";
+      case "Tarea": return "default";
+      case "Recordatorio": return "secondary";
       default: return "outline";
     }
   };
@@ -117,16 +118,16 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={handleShare}><Share2 /> Share Tasks</Button>
+        <Button variant="outline" onClick={handleShare}><Share2 /> Compartir Tareas</Button>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-                <PlusCircle /> Add Task
+                <PlusCircle /> Añadir Tarea
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Add a new item</DialogTitle>
+              <DialogTitle>Añadir un nuevo item</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -135,9 +136,9 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Title</FormLabel>
+                      <FormLabel>Título</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Read chapter 5" {...field} />
+                        <Input placeholder="e.g., Leer capítulo 5" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -148,17 +149,17 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Type</FormLabel>
+                      <FormLabel>Tipo</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an item type" />
+                            <SelectValue placeholder="Selecciona un tipo de item" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Task">Task</SelectItem>
-                          <SelectItem value="Exam">Exam</SelectItem>
-                          <SelectItem value="Reminder">Reminder</SelectItem>
+                          <SelectItem value="Tarea">Tarea</SelectItem>
+                          <SelectItem value="Examen">Examen</SelectItem>
+                          <SelectItem value="Recordatorio">Recordatorio</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -170,7 +171,7 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                   name="dueDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Due Date</FormLabel>
+                      <FormLabel>Fecha de Entrega</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -182,9 +183,9 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                               )}
                             >
                               {field.value ? (
-                                format(field.value, "PPP")
+                                format(field.value, "PPP", { locale: es })
                               ) : (
-                                <span>Pick a date</span>
+                                <span>Elige una fecha</span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
@@ -197,6 +198,7 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                             onSelect={field.onChange}
                             disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
                             initialFocus
+                            locale={es}
                           />
                         </PopoverContent>
                       </Popover>
@@ -209,17 +211,17 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description (Optional)</FormLabel>
+                      <FormLabel>Descripción (Opcional)</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Add more details..." {...field} />
+                        <Textarea placeholder="Añade más detalles..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <DialogFooter>
-                    <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
-                    <Button type="submit">Add Item</Button>
+                    <DialogClose asChild><Button type="button" variant="ghost">Cancelar</Button></DialogClose>
+                    <Button type="submit">Añadir Item</Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -232,10 +234,10 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead>Título</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Fecha de Entrega</TableHead>
+                <TableHead>Descripción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -248,7 +250,7 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                       <TableCell>
                         <Badge variant={getTaskBadgeVariant(task.type)}>{task.type}</Badge>
                       </TableCell>
-                      <TableCell>{format(task.dueDate, "PPP")}</TableCell>
+                      <TableCell>{format(task.dueDate, "PPP", { locale: es })}</TableCell>
                       <TableCell className="max-w-xs truncate text-muted-foreground">
                         {task.description || "-"}
                       </TableCell>
@@ -257,7 +259,7 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center">
-                    No tasks found. Add one to get started!
+                    No se encontraron tareas. ¡Añade una para empezar!
                   </TableCell>
                 </TableRow>
               )}

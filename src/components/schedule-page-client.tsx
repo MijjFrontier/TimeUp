@@ -41,20 +41,20 @@ import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Share2, Clock, MapPin, BookOpen } from "lucide-react";
 
 const daysOfWeek: ClassItem["day"][] = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
 ];
 
 const classSchema = z.object({
-  subject: z.string().min(1, "Subject is required"),
+  subject: z.string().min(1, "La materia es obligatoria"),
   day: z.enum(daysOfWeek),
-  startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
-  endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+  startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
+  endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
   location: z.string().optional(),
 });
 
@@ -71,7 +71,7 @@ export function SchedulePageClient({
     resolver: zodResolver(classSchema),
     defaultValues: {
       subject: "",
-      day: "Monday",
+      day: "Lunes",
       startTime: "",
       endTime: "",
       location: "",
@@ -84,19 +84,19 @@ export function SchedulePageClient({
       ...values,
     };
     setSchedule([...schedule, newClass]);
-    toast({ title: "Success", description: "Class added to your schedule." });
+    toast({ title: "Éxito", description: "Clase añadida a tu horario." });
     setIsDialogOpen(false);
     form.reset();
   };
   
   const handleShare = () => {
-    let shareText = "My Weekly Schedule:\n\n";
+    let shareText = "Mi Horario Semanal:\n\n";
     daysOfWeek.forEach(day => {
         const classesForDay = schedule.filter(c => c.day === day).sort((a,b) => a.startTime.localeCompare(b.startTime));
         if(classesForDay.length > 0) {
             shareText += `${day}:\n`;
             classesForDay.forEach(c => {
-                shareText += `  - ${c.startTime}-${c.endTime}: ${c.subject}${c.location ? ` at ${c.location}`: ''}\n`;
+                shareText += `  - ${c.startTime}-${c.endTime}: ${c.subject}${c.location ? ` en ${c.location}`: ''}\n`;
             });
             shareText += '\n';
         }
@@ -104,24 +104,24 @@ export function SchedulePageClient({
 
     navigator.clipboard.writeText(shareText);
     toast({
-        title: "Schedule Copied!",
-        description: "Your schedule has been copied to the clipboard.",
+        title: "¡Horario Copiado!",
+        description: "Tu horario ha sido copiado al portapapeles.",
     });
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={handleShare}><Share2 /> Share Schedule</Button>
+        <Button variant="outline" onClick={handleShare}><Share2 /> Compartir Horario</Button>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button style={{ backgroundColor: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-              <PlusCircle /> Add Class
+              <PlusCircle /> Añadir Clase
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add a New Class</DialogTitle>
+              <DialogTitle>Añadir una Nueva Clase</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -130,9 +130,9 @@ export function SchedulePageClient({
                   name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subject</FormLabel>
+                      <FormLabel>Materia</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Calculus II" {...field} />
+                        <Input placeholder="e.g. Cálculo II" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -143,14 +143,14 @@ export function SchedulePageClient({
                   name="day"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Day of the Week</FormLabel>
+                      <FormLabel>Día de la Semana</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a day" />
+                            <SelectValue placeholder="Selecciona un día" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -171,7 +171,7 @@ export function SchedulePageClient({
                     name="startTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Time</FormLabel>
+                        <FormLabel>Hora de Inicio</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
@@ -184,7 +184,7 @@ export function SchedulePageClient({
                     name="endTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Time</FormLabel>
+                        <FormLabel>Hora de Fin</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
@@ -198,9 +198,9 @@ export function SchedulePageClient({
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Location (Optional)</FormLabel>
+                      <FormLabel>Ubicación (Opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Science Hall 101" {...field} />
+                        <Input placeholder="e.g. Salón de Ciencias 101" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -208,9 +208,9 @@ export function SchedulePageClient({
                 />
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="button" variant="ghost">Cancel</Button>
+                        <Button type="button" variant="ghost">Cancelar</Button>
                     </DialogClose>
-                    <Button type="submit">Add Class</Button>
+                    <Button type="submit">Añadir Clase</Button>
                 </DialogFooter>
               </form>
             </Form>

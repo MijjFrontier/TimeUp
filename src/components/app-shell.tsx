@@ -27,9 +27,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
+  { href: "/", label: "Panel", icon: LayoutDashboard },
+  { href: "/tasks", label: "Tareas", icon: CheckSquare },
+  { href: "/schedule", label: "Horario", icon: CalendarDays },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
              <SidebarMenuButton asChild>
                 <Link href="#">
                   <LogOut />
-                  <span>Logout</span>
+                  <span>Cerrar Sesión</span>
                 </Link>
              </SidebarMenuButton>
            </div>
@@ -75,13 +75,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
            <div className="flex items-center gap-2">
              <SidebarTrigger className="md:hidden" />
              <h1 className="text-xl font-bold font-headline md:text-2xl">
-                {navItems.find(item => item.href === pathname)?.label || 'Dashboard'}
+                {navItems.find(item => item.href === pathname)?.label || 'Panel'}
              </h1>
            </div>
            <div className="flex items-center gap-4">
              <Avatar className="h-9 w-9">
               <AvatarImage src="https://placehold.co/100x100.png" alt="@student" data-ai-hint="person face" />
-              <AvatarFallback>S</AvatarFallback>
+              <AvatarFallback>E</AvatarFallback>
             </Avatar>
            </div>
         </header>
