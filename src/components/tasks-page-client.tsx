@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Task } from "@/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, PlusCircle, Share2 } from "lucide-react";
+import { Calendar as CalendarIcon, PlusCircle, Share2, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -66,9 +66,41 @@ const taskSchema = z.object({
 });
 
 export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isClient, setIsClient] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+        try {
+            const storedTasks = localStorage.getItem("tasks");
+            if (storedTasks) {
+                // When retrieving from localStorage, dates are strings, so we need to convert them back to Date objects
+                const parsedTasks = JSON.parse(storedTasks).map((task: Task) => ({
+                    ...task,
+                    dueDate: new Date(task.dueDate) 
+                }));
+                setTasks(parsedTasks);
+            } else {
+                setTasks(initialTasks);
+            }
+        } catch (error) {
+            console.error("Failed to parse tasks from localStorage", error);
+            setTasks(initialTasks);
+        }
+    }
+  }, [isClient, initialTasks]);
+
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+  }, [tasks, isClient]);
 
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
@@ -92,9 +124,14 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
     setIsDialogOpen(false);
     form.reset();
   }
+
+  const handleDelete = (id: string) => {
+    setTasks(tasks.filter(task => task.id !== id));
+    toast({ title: "Tarea eliminada", description: "La tarea ha sido eliminada de tu lista." });
+  }
   
   const handleShare = () => {
-    const sortedTasks = [...tasks].sort((a,b) => a.dueDate.getTime() - b.dueDate.getTime());
+    const sortedTasks = [...tasks].sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
     let shareText = "Mis Tareas y Fechas de Entrega:\n\n";
     sortedTasks.forEach(task => {
         shareText += `- [${task.type}] ${task.title} - Fecha de entrega: ${format(task.dueDate, "PPP", { locale: es })}\n`;
@@ -238,6 +275,7 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Fecha de Entrega</TableHead>
                 <TableHead>Descripción</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -250,15 +288,21 @@ export function TasksPageClient({ initialTasks }: { initialTasks: Task[] }) {
                       <TableCell>
                         <Badge variant={getTaskBadgeVariant(task.type)}>{task.type}</Badge>
                       </TableCell>
-                      <TableCell>{format(task.dueDate, "PPP", { locale: es })}</TableCell>
+                      <TableCell>{format(new Date(task.dueDate), "PPP", { locale: es })}</TableCell>
                       <TableCell className="max-w-xs truncate text-muted-foreground">
                         {task.description || "-"}
+                      </TableCell>
+                       <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar tarea</span>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No se encontraron tareas. ¡Añade una para empezar!
                   </TableCell>
                 </TableRow>
